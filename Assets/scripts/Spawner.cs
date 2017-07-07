@@ -12,12 +12,19 @@ public class Spawner : MonoBehaviour {
     protected Dictionary<int, List<GameObject>> spawnOrder = new Dictionary<int, List<GameObject>>(); // can be seen as a multidimensional array with some additional functionality
     protected int currentNum = 0;
     protected GameObject currentPiece = null;
+    protected Arduino arduino;
 	// Use this for initialization
 	void Start () {
         CreateSpawnOrder();
         StartCoroutine(LateStart(1f));
         string[] joysticks = Input.GetJoystickNames();
         string controller = "keyboard";
+        GameObject gArduino = GameObject.Find("Arduino");
+        if (gArduino)
+        {
+            arduino = gArduino.GetComponent<Arduino>();
+            controller = "arduino";
+        }
         if (joysticks.Length > 0 && joysticks[0].Length > 0)
         {
             controller = "gamepad";

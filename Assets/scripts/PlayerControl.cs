@@ -13,10 +13,15 @@ public class PlayerControl : MonoBehaviour {
     private int mostLeft;       // used for arduino/xboxtrigger, retrieved from spawner
     private int mostRight;      // used for arduino/xboxtrigger, retrieved from spawner
     private int gridDiff;
+    Arduino arduino;
 	// Use this for initialization
 	void Start () {
         control = PlayerPrefs.GetString("control");
         Debug.Log(control);
+        if (control == "arduino")
+        {
+            arduino = GameObject.Find("Arduino").GetComponent<Arduino>();
+        }
         controllingPiece = GetComponent<Piece>();
         controllingPiece.Colorize();
         timer = time;
@@ -53,6 +58,9 @@ public class PlayerControl : MonoBehaviour {
         {
             case "gamepad":
                 position = XboxControl(position);
+                break;
+            case "arduino":
+                position = ArduinoSingleControl(position);
                 break;
             default:
                 position = KeyboardControl(position);
@@ -148,15 +156,22 @@ public class PlayerControl : MonoBehaviour {
 
     private Vector3 ToPosition(Vector3 position, float sensorPosition) // sensorPosition = 0-100
     {
-        int gridPosition = Mathf.RoundToInt(sensorPosition / 100 * gridDiff);
-        position.x = gridPosition + mostLeft; // add mostLeft to convert to worldposition
-        Debug.Log(gridPosition +" , "+ gridDiff);
+        Debug.Log(sensorPosition);
+        int wantedPosition = Mathf.RoundToInt(sensorPosition / 100 * gridDiff) + mostLeft;
+        if (wantedPosition < position.x) // left
+        {
+            if (CanMoveTo(position, -1)) position.x--;
+        } else if (wantedPosition > position.x) // right
+        {
+            if (CanMoveTo(position, 1)) position.x++;
+        }
         return position;
     }
 
-    private void ArduinoSingleControl()
+    private Vector3 ArduinoSingleControl(Vector3 position)
     {
-
+        position = ToPosition(position, arduino.Value);
+        return position;
     }
 
     private void ArduinoDoubleControl()
